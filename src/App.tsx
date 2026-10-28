@@ -8,9 +8,13 @@ import { OrderHistory } from './OrderHistory'
 import { getProductImage } from './product-images'
 
 function useScrollReveal() {
-  const observed = useRef(new Set<Element>())
   const init = useCallback(() => {
     const els = document.querySelectorAll('[data-reveal]')
+    if (!('IntersectionObserver' in window)) {
+      els.forEach((element) => element.classList.add('is-visible'))
+      return
+    }
+
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -23,10 +27,7 @@ function useScrollReveal() {
       { threshold: 0.12, rootMargin: '0px 0px -40px 0px' },
     )
     for (const el of els) {
-      if (!observed.current.has(el)) {
-        observed.current.add(el)
-        io.observe(el)
-      }
+      io.observe(el)
     }
     return io
   }, [])
@@ -167,7 +168,7 @@ function App() {
   useEffect(() => {
     const io = initReveal()
     return () => io?.disconnect()
-  }, [initReveal, visibleProducts])
+  }, [initReveal, products, activeCategory, searchQuery])
 
   useEffect(() => {
     if (isOrdersPage && !isLoggedIn) window.location.replace('/')
