@@ -1664,11 +1664,6 @@ footer {
   .site-shell {
     overflow-x: clip;
   }
-  [data-reveal] {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
   .desktop-nav {
     display: none;
   }
