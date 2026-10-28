@@ -59,3 +59,5 @@ The project uses Vite for the customer/admin web app, an Express API function in
 7. Test `/api/health`, customer login, product listing, checkout, admin updates, photo upload, and push notification permission on the HTTPS deployment.
 
 Keep all secret values in Vercel Environment Variables and a local ignored `.env`; do not share database URIs, database passwords, VAPID private keys, or Supabase secret/service-role keys in chat or source control. The `SUPABASE_SERVICE_ROLE_KEY` bypasses RLS, so it must only be used by the server.
+
+The SPA fallback rewrite deliberately excludes `/api/*`, so API requests reach the Vercel Function instead of returning `index.html`.
