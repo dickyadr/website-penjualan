@@ -3,19 +3,27 @@ import { Pool, type PoolClient, type QueryResultRow } from 'pg'
 export type DbRow = Record<string, unknown>
 type DbRows = DbRow[] & { affectedRows?: number }
 
-const connectionString = process.env.DATABASE_URL
-if (!connectionString) {
-  throw new Error('DATABASE_URL belum diatur. Tambahkan Supabase Transaction Pooler connection string pada environment server.')
-}
+let pool: Pool | undefined
 
-const pool = new Pool({
-  connectionString,
-  ssl: { rejectUnauthorized: false },
-  max: 5,
-  idleTimeoutMillis: 10_000,
-  connectionTimeoutMillis: 10_000,
-  allowExitOnIdle: true,
-})
+function getPool() {
+  if (pool) return pool
+
+  const connectionString = process.env.DATABASE_URL
+  if (!connectionString) {
+    throw new Error('DATABASE_URL belum diatur. Tambahkan Supabase Transaction Pooler connection string pada environment server.')
+  }
+
+  pool = new Pool({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
+    max: 5,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 10_000,
+    allowExitOnIdle: true,
+  })
+
+  return pool
+}
 
 export function postgresSql(sql: string) {
   return sql
@@ -71,17 +79,17 @@ class DatabaseConnection {
 
 const poolAdapter = {
   async query(sql: string, values: unknown[] = []): Promise<[DbRows]> {
-    const result = await pool.query(postgresSql(sql), values)
+    const result = await getPool().query(postgresSql(sql), values)
     return [adaptRows(result.rows, result.rowCount)]
   },
   execute(sql: string, values: unknown[] = []) {
     return this.query(sql, values)
   },
   async getConnection() {
-    return new DatabaseConnection(await pool.connect())
+    return new DatabaseConnection(await getPool().connect())
   },
   end() {
-    return pool.end()
+    return pool?.end() ?? Promise.resolve()
   },
 }
 
