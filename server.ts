@@ -7,7 +7,7 @@ import webpush from 'web-push'
 import crypto from 'node:crypto'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
-import pool, { type DbRow } from './db'
+import pool, { type DbRow } from './db.js'
 
 const app = express()
 const port = Number(process.env.PORT || 3001)
